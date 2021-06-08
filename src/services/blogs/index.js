@@ -15,9 +15,11 @@ blogsRoute.get('/', async (req, res, next) => {
 blogsRoute.get('/:id', async (req, res, next) => {
 	try {
 		const dbResponse = await query(
-			'SELECT * FROM blogs ORDER BY created_at DESC'
+			`SELECT * FROM blogs WHERE blog_id=${req.params.id}`
 		);
-		res.send(dbResponse);
+		res
+			.status(dbResponse ? 200 : 404)
+			.send(dbResponse ? dbResponse : { error: 'student not found' });
 	} catch (error) {
 		res.status(500).send({ error });
 	}
@@ -25,8 +27,17 @@ blogsRoute.get('/:id', async (req, res, next) => {
 
 blogsRoute.put('/:id', async (req, res, next) => {
 	try {
+		const {
+			category,
+			title,
+			cover,
+			read_time_value,
+			read_time_unit,
+			author,
+			content,
+		} = req.body;
 		const dbResponse = await query(
-			'SELECT * FROM blogs ORDER BY created_at DESC'
+			`UPDATE  blogs SET category='${category}',title='${title}', cover='${cover}', read_time_value=${read_time_value}, read_time_unit=${read_time_unit},author=${author},content=${content} WHERE blog_id=${req.params.id} RETURNING *`
 		);
 		res.send(dbResponse);
 	} catch (error) {
@@ -36,19 +47,34 @@ blogsRoute.put('/:id', async (req, res, next) => {
 
 blogsRoute.post('/', async (req, res, next) => {
 	try {
+		const {
+			category,
+			title,
+			cover,
+			read_time_value,
+			read_time_unit,
+			author,
+			content,
+		} = req.body;
 		const dbResponse = await query(
-			'SELECT * FROM blogs ORDER BY created_at DESC'
+			`INSERT INTO blogs (category,
+                title,
+                cover,
+                read_time_value,
+                read_time_unit,
+                author,
+                content,) VALUES('${category}',title='${title}', cover='${cover}', read_time_value=${read_time_value}, read_time_unit=${read_time_unit},author=${author},content=${content} ) RETURNING *`
 		);
 		res.send(dbResponse);
 	} catch (error) {
-		res.status(500).send({ error });
+		res.status(500).send({ error: error.message });
 	}
 });
 
 blogsRoute.delete('/', async (req, res, next) => {
 	try {
 		const dbResponse = await query(
-			'SELECT * FROM blogs ORDER BY created_at DESC'
+			`DELETE FROM blogs WHERE blog_id=${req.params.id}`
 		);
 		res.send(dbResponse);
 	} catch (error) {
